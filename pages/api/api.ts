@@ -24,18 +24,6 @@ async function generate_new_id(client: ClientBase) {
   return id
 }
 
-async function handle_method(res: NextApiResponse, validate: () => string[], run: () => void): Promise<void> {
-  const errors = validate()
-
-  if (errors.length !== 0) {
-    res.statusCode = 400
-    res.json({ message: errors.join('\n') })
-    return
-  }
-
-  await run()
-}
-
 function bad_request(res: NextApiResponse, code: string, message: string) {
   res.statusCode = 400
   res.json({ code, message })
