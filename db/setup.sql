@@ -7,7 +7,9 @@ create table subjects (
   first_name varchar(35) not null,
   last_name varchar(35) not null,
   email varchar(120) not null,
-  secret char(21)
+  secret char(21),
+  unique (subject_id),
+  unique (email)
 );
 
 create unique index subjects_subject_id on subjects (subject_id);
@@ -25,7 +27,8 @@ create table reports (
   report_date date not null,
   foreground_time integer not null,
   visible_time integer not null,
-  constraint fk_subject_id foreign key (subject_id) references subjects(subject_id)
+  constraint fk_subject_id foreign key (subject_id) references subjects(subject_id),
+  unique (subject_id, application_id, report_date)
 );
 
 create index reports_subject_id on reports (subject_id);
@@ -33,6 +36,6 @@ create index reports_application_id on reports (application_id);
 
 -- foreground_time and visible_time in seconds
 
-insert into subjects (subject_id, first_name, last_name, email) values ('abcdef', 'Raphael', 'Mu', 'raphaeljmu@gmail.com');
-
+insert into subjects (subject_id, first_name, last_name, email, secret) values ('abcdef', 'Raphael', 'Mu', 'raphaeljmu@gmail.com', 'kzVs3AvG-nFLV3vZEzenT'), ('bcdefg', 'Lehan', 'Zhang', 'lehan.zhang@hotmail.com', default);
+insert into reports (subject_id, application_id, report_date, foreground_time, visible_time) values ('abcdef', 'com.instagram.android', '2021-08-30', 22, 23), ('abcdef', 'com.facebook.katana', '2021-08-30', 56, 59);
 

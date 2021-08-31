@@ -1,4 +1,4 @@
-import { ClientBase } from 'pg'
+import { ClientBase, DatabaseError } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
 import get_client from '../../db/connect'
 import { add_subject, get_subject_by_subject_id, set_secret, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../../db/driver'
@@ -30,9 +30,9 @@ async function generate_new_id(client: ClientBase) {
   return id
 }
 
-function bad_request(res: NextApiResponse, code: string, message: string) {
+function bad_request(res: NextApiResponse, tag: string, message: string) {
   res.statusCode = 400
-  res.json({ code, message })
+  res.json({ tag, message })
 }
 
 function forbidden(res: NextApiResponse) {
@@ -53,7 +53,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
   const client = await get_client()
 
   try {
-    if (endpoint === 'initial-auth') {
+    if (endpoint === 'induct') {
       if (method !== 'POST') return bad_request(res, 'wrong-method', 'This endpoint accepts POST requests only.')
 
       const { first_name, subject_id } = req.body
@@ -125,10 +125,10 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
     } else if (endpoint === 'submit-report') {
       if (method !== 'POST') return bad_request(res, 'wrong-method', 'This endpoint accepts POST requests only.')
 
-      const { subject_id, date, reports } = req.body
+      const { subject_id, report_date, reports } = req.body
 
       if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
-      if (date == null) return bad_request(res, 'missing-field', 'Missing date.')
+      if (report_date == null) return bad_request(res, 'missing-field', 'Missing date.')
 
       if (auth_token !== admin_token) {
         const result = await check_secret(client, subject_id)
@@ -139,10 +139,18 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
       const raw_reports = reports as RawReport[]
 
       const db_reports: DBReport[] = raw_reports.map(
-        r => [subject_id, r.application_id, date, r.foreground_time, r.visible_time]
+        r => [subject_id, r.application_id, report_date, r.foreground_time, r.visible_time]
       )
 
-      await add_reports(client, db_reports)
+      try {
+        await add_reports(client, db_reports)
+      } catch (err) {
+        if ((err as DatabaseError).code === '23505') {
+          return bad_request(res, 'report-exists', 'A report already exists for one of the combinations of user, application ID, and date.')
+        }
+
+        throw err
+      }
 
       res.json({ data: {} })
     } else if (endpoint === 'get-all-reports') {
