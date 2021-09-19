@@ -5,8 +5,6 @@ import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
 import { nanoid } from 'nanoid'
 
-import admin_config from '../admin-config.json'
-
 export type EndpointExtra = {
   method: string
   auth_token?: string
@@ -21,7 +19,7 @@ export type EndpointCarrier = {
 
 // const PG_ERROR_UNIQUE_VIOLATION = '23505'
 
-const admin_token = admin_config.token
+const admin_token = process.env.ADMIN_TOKEN
 
 type RawReport = {
   application_id: string
