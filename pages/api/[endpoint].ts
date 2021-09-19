@@ -3,11 +3,11 @@ import get_client from '../../db/connect'
 import endpoints, { EndpointExtra } from '../../src/endpoints'
 import { not_found } from '../../src/response'
 
-export default async function handle(req: NextApiRequest, res: NextApiResponse) {
+export default async function handle(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   const endpoint = req.query.endpoint as string
 
   const extra: EndpointExtra = {
-    method: req.method!,
+    method: req.method as string,
     auth_token: req.headers.auth_token as (string | undefined),
     client: await get_client()
   }

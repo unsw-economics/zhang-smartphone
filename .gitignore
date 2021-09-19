@@ -3,4 +3,4 @@ node_modules/
 .next/
 .env.local
 .env
-admin-token.json
+admin-config.json

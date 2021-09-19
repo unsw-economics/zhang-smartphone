@@ -1,9 +1,11 @@
-import { ClientBase, DatabaseError } from 'pg'
+import { ClientBase } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { add_subject, get_subject_by_subject_id, set_secret, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
 import { nanoid } from 'nanoid'
+
+import admin_config from '../admin-config.json'
 
 export type EndpointExtra = {
   method: string
@@ -17,9 +19,9 @@ export type EndpointCarrier = {
   [k: string]: Endpoint
 }
 
-const PG_ERROR_UNIQUE_VIOLATION = '23505'
+// const PG_ERROR_UNIQUE_VIOLATION = '23505'
 
-const admin_token = require('../admin-token.json').token
+const admin_token = admin_config.token
 
 type RawReport = {
   application_id: string
