@@ -37,20 +37,23 @@ export function check_id(client: ClientBase, subject_id: string) {
   return check_subject_field(client, subject_id, 'subject_id')
 }
 
+export function check_test_group(client: ClientBase, subject_id: string) {
+  return check_subject_field(client, subject_id, 'test_group')
+}
+
 export function check_secret(client: ClientBase, subject_id: string) {
   return check_subject_field(client, subject_id, 'secret')
 }
 
-export type DBReport = [string, string, string, number, number]
+export type DBReport = [string, string, string, number]
 
 export function get_reports(client: ClientBase) {
   return client.query('select * from reports')
 }
 
 export function add_reports(client: ClientBase, app_reports: DBReport[]) {
-  console.log(`insert into reports (subject_id, application_id, report_date, foreground_time, visible_time) values ${ expand_args(app_reports.length, 5) }`)
   return client.query(
-    `insert into reports (subject_id, application_id, report_date, foreground_time, visible_time) values ${ expand_args(app_reports.length, 5) }`,
+    `insert into reports (subject_id, application_id, report_date, usage_seconds) values ${ expand_args(app_reports.length, 4) } on conflict do nothing`,
     app_reports.flat()
   )
 }
