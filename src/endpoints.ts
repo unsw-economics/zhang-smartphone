@@ -104,7 +104,11 @@ const endpoints: EndpointCarrier = {
       auth_token === admin_token ||
       result.rows.length !== 0 && auth_token === result.rows[0].secret
     ) {
-      res.json({ data: result.rows[0].test_group })
+      res.json({
+        data: {
+          test_group: result.rows[0].test_group
+        }
+      })
     } else {
       return forbidden(res)
     }
