@@ -1,6 +1,6 @@
 import { ClientBase } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { add_subject, get_subject_by_subject_id, set_secret, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../db/driver'
+import { add_subject, get_subject_by_subject_id, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
 import { nanoid } from 'nanoid'
@@ -69,30 +69,25 @@ function http_post(endpoint: Endpoint): Endpoint {
 
 const endpoints: EndpointCarrier = {
   identify: http_post(async (req, res, { client }) => {
-    const { email, subject_id } = req.body
+    const { subject_id } = req.body
 
-    if (email == null) return bad_request(res, 'missing-field', 'Missing email.')
     if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
 
     const result = await get_subject_by_subject_id(client, subject_id)
 
-    if (result.rows.length === 0 || result.rows[0].email !== email) return bad_request(
+    if (result.rows.length === 0) return bad_request(
       res,
       'subject-not-found',
-      'Subject with that email and ID combination does not exist.'
+      'Subject with that ID does not exist.'
     )
 
-    const existing_secret = result.rows[0].secret
+    const subject = result.rows[0]
 
-    if (existing_secret !== null) {
-      res.json({ data: { auth_token: existing_secret } })
-    } else {
-      const secret = nanoid()
-
-      await set_secret(client, subject_id as string, secret)
-
-      res.json({ data: { auth_token: secret } })
-    }
+    res.json({
+      data: {
+        auth_token: subject.secret
+      }
+    })
   }),
 
   ['get-test-group']: http_get(async (req, res, { auth_token, client }) => {
@@ -119,21 +114,13 @@ const endpoints: EndpointCarrier = {
 
       const { first_name, last_name, email } = req.body
 
-      const errors = []
-
-      if (first_name == null) errors.push('Missing first name.')
-      if (last_name == null) errors.push('Missing last name.')
-      if (email == null) errors.push('Missing email.')
-
-      if (errors.length !== 0) return bad_request(
-        res,
-        'missing-field',
-        errors.join('\n')
-      )
+      if (first_name == null) return bad_request(res, 'missing-field', 'Missing first name.')
+      if (last_name == null) return bad_request(res, 'missing-field', 'Missing last name.')
+      if (email == null) return bad_request(res, 'missing-field', 'Missing email.')
 
       const subject_id = await generate_new_id(client)
 
-      await add_subject(client, subject_id, first_name, last_name, email)
+      await add_subject(client, subject_id, first_name, last_name, email, nanoid())
 
       res.json({ subject_id })
   }),
@@ -161,18 +148,19 @@ const endpoints: EndpointCarrier = {
   }),
 
   ['get-all-subjects']: http_get(async (req, res, { auth_token, client }) => {
-      if (auth_token !== admin_token) return forbidden(res)
+    if (auth_token !== admin_token) return forbidden(res)
 
-      const result = await get_subjects(client)
+    const result = await get_subjects(client)
 
-      res.json({ data: result.rows })
+    res.json({ data: result.rows })
   }),
 
   ['submit-report']: http_post(async (req, res, { auth_token, client }) => {
-    const { subject_id, report_date, reports } = req.body
+    const { subject_id, report_period, report_day, reports } = req.body
 
     if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
-    if (report_date == null) return bad_request(res, 'missing-field', 'Missing date.')
+    if (report_period == null) return bad_request(res, 'missing-field', 'Missing report period.')
+    if (report_day == null) return bad_request(res, 'missing-field', 'Missing report day.')
 
     if (auth_token !== admin_token) {
       const result = await check_secret(client, subject_id)
@@ -183,7 +171,7 @@ const endpoints: EndpointCarrier = {
     const raw_reports = reports as RawReport[]
 
     const db_reports: DBReport[] = raw_reports.map(
-      r => [subject_id, r.application_id, report_date, r.usage_seconds]
+      r => [subject_id, r.application_id, report_period, report_day, r.usage_seconds]
     )
 
     await add_reports(client, db_reports)

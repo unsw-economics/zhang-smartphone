@@ -1,9 +1,9 @@
 import { ClientBase } from 'pg'
 
-export function add_subject(client: ClientBase, subject_id: string, first_name: string, last_name: string, email: string) {
+export function add_subject(client: ClientBase, subject_id: string, first_name: string, last_name: string, email: string, secret: string) {
   return client.query(
-    'insert into subjects (subject_id, first_name, last_name, email) values ($1, $2, $3, $4, $5)',
-    [subject_id, first_name, last_name, email]
+    'insert into subjects (subject_id, first_name, last_name, email, secret) values ($1, $2, $3, $4, $5)',
+    [subject_id, first_name, last_name, email, secret]
   )
 }
 
@@ -11,13 +11,6 @@ export function set_test_group(client: ClientBase, subject_id: string, test_grou
   return client.query(
     'update subjects set test_group = $1 where subject_id = $2',
     [test_group, subject_id]
-  )
-}
-
-export function set_secret(client: ClientBase, subject_id: string, secret: string) {
-  return client.query(
-    'update subjects set secret = $1 where subject_id = $2',
-    [secret, subject_id]
   )
 }
 
@@ -45,7 +38,7 @@ export function check_secret(client: ClientBase, subject_id: string) {
   return check_subject_field(client, subject_id, 'secret')
 }
 
-export type DBReport = [string, string, string, number]
+export type DBReport = [string, string, string, number, number]
 
 export function get_reports(client: ClientBase) {
   return client.query('select * from reports')
@@ -53,12 +46,12 @@ export function get_reports(client: ClientBase) {
 
 export function add_reports(client: ClientBase, app_reports: DBReport[]) {
   return client.query(
-    `insert into reports (subject_id, application_id, report_date, usage_seconds) values ${ expand_args(app_reports.length, 4) } on conflict do nothing`,
+    `insert into reports (subject_id, application_id, report_period, report_day, usage_seconds) values ${ expand_args(app_reports.length, 5) } on conflict do nothing`,
     app_reports.flat()
   )
 }
 
-function expand_args(rows: number, columns: number, start_index: number = 1): string {
+function expand_args(rows: number, columns: number, start_index = 1): string {
   const params = []
 
   for (let i = 0; i < rows; i++) {
