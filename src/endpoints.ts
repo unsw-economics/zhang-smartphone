@@ -156,11 +156,11 @@ const endpoints: EndpointCarrier = {
   }),
 
   ['submit-report']: http_post(async (req, res, { auth_token, client }) => {
-    const { subject_id, report_period, report_day, reports } = req.body
+    const { subject_id, period, day, reports } = req.body
 
     if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
-    if (report_period == null) return bad_request(res, 'missing-field', 'Missing report period.')
-    if (report_day == null) return bad_request(res, 'missing-field', 'Missing report day.')
+    if (period == null) return bad_request(res, 'missing-field', 'Missing report period.')
+    if (day == null) return bad_request(res, 'missing-field', 'Missing report day.')
 
     if (auth_token !== admin_token) {
       const result = await check_secret(client, subject_id)
@@ -171,7 +171,7 @@ const endpoints: EndpointCarrier = {
     const raw_reports = reports as RawReport[]
 
     const db_reports: DBReport[] = raw_reports.map(
-      r => [subject_id, r.application_id, report_period, report_day, r.usage_seconds]
+      r => [subject_id, r.application_id, period, day, r.usage_seconds]
     )
 
     await add_reports(client, db_reports)
