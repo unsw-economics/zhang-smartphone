@@ -46,7 +46,7 @@ export function get_reports(client: ClientBase) {
 
 export function add_reports(client: ClientBase, app_reports: DBReport[]) {
   return client.query(
-    `insert into reports (subject_id, application_id, period, day, usage_seconds) values ${ expand_args(app_reports.length, 5) } on conflict do nothing`,
+    `insert into reports (subject_id, application_name, period, day, usage_seconds) values ${ expand_args(app_reports.length, 5) } on conflict do nothing`,
     app_reports.flat()
   )
 }

@@ -23,23 +23,23 @@ create type report_period as enum ('baseline', 'experiment');
 create table reports (
   id serial primary key not null,
   subject_id char(12) not null,
-  application_id varchar(100) not null,
+  application_name varchar(100) not null,
   period report_period not null,
   day int not null,
   usage_seconds int not null,
   constraint fk_subject_id foreign key (subject_id) references subjects(subject_id),
-  unique (subject_id, application_id, period, day)
+  unique (subject_id, application_name, period, day)
 );
 
 create index reports_subject_id on reports (subject_id);
-create index reports_application_id on reports (application_id);
+create index reports_application_name on reports (application_name);
 
 insert into subjects (subject_id, email, secret, test_group) values
   ('aaaaaa000000', 'raphaeljmu@gmail.com', 'kzVs3AvG-nFLV3vZEzenT', 1),
   ('aaaaaa000001', 'lehan.zhang@hotmail.com', '611bhdtcehsQIT4N4rNse', 0),
   ('aaaaaa000002', 'jane.zhang@unsw.edu.au', '3fEt6MEL94jy8dUS8s4YC', default);
 
-insert into reports (subject_id, application_id, period, day, usage_seconds) values
+insert into reports (subject_id, application_name, period, day, usage_seconds) values
   ('aaaaaa000000', 'com.instagram.android', 'baseline', 0, 22),
   ('aaaaaa000000', 'com.facebook.katana', 'baseline', 0, 56);
 
