@@ -194,7 +194,7 @@ const endpoints: EndpointCarrier = {
 
     */
 
-    res.json({ data: {} })
+    res.json({})
   }),
 
   ['get-all-reports']: http_get(async (req, res, { auth_token, client }) => {

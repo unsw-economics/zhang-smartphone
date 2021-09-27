@@ -8,7 +8,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse):
 
   const extra: EndpointExtra = {
     method: req.method as string,
-    auth_token: req.headers.auth_token as (string | undefined),
+    auth_token: req.headers.authorization as (string | undefined),
     client: await get_client()
   }
 
