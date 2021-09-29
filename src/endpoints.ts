@@ -1,4 +1,4 @@
-import { ClientBase } from 'pg'
+import { ClientBase, DatabaseError } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { add_subject, get_subject_by_subject_id, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../db/driver'
 import { generate_id } from './subject'
@@ -16,8 +16,6 @@ export type Endpoint = (req: NextApiRequest, res: NextApiResponse, extra: Endpoi
 export type EndpointCarrier = {
   [k: string]: Endpoint
 }
-
-// const PG_ERROR_UNIQUE_VIOLATION = '23505'
 
 const admin_token = process.env.ADMIN_TOKEN
 
@@ -90,7 +88,7 @@ const endpoints: EndpointCarrier = {
     })
   }),
 
-  ['get-test-group']: http_get(async (req, res, { auth_token, client }) => {
+  'get-test-group': http_get(async (req, res, { auth_token, client }) => {
     const { subject_id } = req.query as Record<string, string>
 
     const result = await get_subject_by_subject_id(client, subject_id)
@@ -109,7 +107,7 @@ const endpoints: EndpointCarrier = {
     }
   }),
 
-  ['add-subject']: http_post(async (req, res, { auth_token, client }) => {
+  'add-subject': http_post(async (req, res, { auth_token, client }) => {
       if (auth_token !== admin_token) return forbidden(res)
 
       const { first_name, last_name, email } = req.body
@@ -125,7 +123,7 @@ const endpoints: EndpointCarrier = {
       res.json({ subject_id })
   }),
 
-  ['get-subject']: http_get(async (req, res, { auth_token, client }) => {
+  'get-subject': http_get(async (req, res, { auth_token, client }) => {
     const { subject_id } = req.query as Record<string, string>
 
     if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
@@ -147,7 +145,7 @@ const endpoints: EndpointCarrier = {
     }
   }),
 
-  ['get-all-subjects']: http_get(async (req, res, { auth_token, client }) => {
+  'get-all-subjects': http_get(async (req, res, { auth_token, client }) => {
     if (auth_token !== admin_token) return forbidden(res)
 
     const result = await get_subjects(client)
@@ -155,7 +153,7 @@ const endpoints: EndpointCarrier = {
     res.json({ data: result.rows })
   }),
 
-  ['submit-report']: http_post(async (req, res, { auth_token, client }) => {
+  'submit-report': http_post(async (req, res, { auth_token, client }) => {
     const { subject_id, period, day, reports } = req.body
 
     if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
@@ -176,28 +174,24 @@ const endpoints: EndpointCarrier = {
 
     await add_reports(client, db_reports)
 
-    /* we use `on conflict do nothing`, so the query will succeed even if there are duplicates
+    // we use `on conflict do nothing`, so the query will succeed even if there are duplicates
 
     try {
       await add_reports(client, db_reports)
     } catch (err) {
-      if ((err as DatabaseError).code === PG_ERROR_UNIQUE_VIOLATION) {
-        return bad_request(
-          res,
-          'report-exists',
-          'A report already exists for one of the combinations of user, application ID, and date.'
-        )
-      }
+      return bad_request(
+        res,
+        'database-error',
+        (err as DatabaseError).message
+      )
 
       throw err
     }
 
-    */
-
     res.json({})
   }),
 
-  ['get-all-reports']: http_get(async (req, res, { auth_token, client }) => {
+  'get-all-reports': http_get(async (req, res, { auth_token, client }) => {
     if (auth_token !== admin_token) return forbidden(res)
 
     const result = await get_reports(client)

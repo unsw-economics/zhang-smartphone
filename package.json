@@ -7,11 +7,13 @@
     "nanoid": "^3.1.25",
     "next": "^11.1.0",
     "pg": "^8.7.1",
+    "pino-http": "^5.8.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   },
   "devDependencies": {
     "@types/pg": "^8.6.1",
+    "@types/pino-http": "^5.8.0",
     "@types/react": "^17.0.19",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
     "eslint": "^7.32.0",

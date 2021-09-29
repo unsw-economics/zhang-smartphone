@@ -2,8 +2,13 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import get_client from '../../db/connect'
 import endpoints, { EndpointExtra } from '../../src/endpoints'
 import { not_found } from '../../src/response'
+import pino from 'pino-http'
+
+const logger = pino()
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse): Promise<void> {
+  logger(req, res)
+
   const endpoint = req.query.endpoint as string
 
   const extra: EndpointExtra = {
