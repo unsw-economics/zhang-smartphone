@@ -23,6 +23,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "reset-db": "psql -f db/schema.sql -f db/test-data.sql zhang_smartphone",
     "build-image": "docker build -t zhang-smartphone .",
     "start-image": "docker run -d --name zhang-smartphone -p 3000:3000 --env-file .env.local --env-file .env.local.docker zhang-smartphone"
   }
