@@ -99,7 +99,7 @@ const endpoints: EndpointCarrier = {
     })
   }),
 
-  'get-test-group': http_get(async (req, res, { auth_token, client }) => {
+  'get-group-and-limit': http_get(async (req, res, { auth_token, client }) => {
     const { subject_id } = req.query as Record<string, string>
 
     const result = await get_subject_by_subject_id(client, subject_id)
@@ -108,9 +108,12 @@ const endpoints: EndpointCarrier = {
       auth_token === admin_token ||
       result.rows.length !== 0 && auth_token === result.rows[0].secret
     ) {
+      const subject = result.rows[0]
+
       res.json({
         data: {
-          test_group: result.rows[0].test_group
+          test_group: subject.test_group,
+          treatment_limit: subject.treatment_limit
         }
       })
     } else {

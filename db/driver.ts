@@ -24,12 +24,8 @@ function set_subject_field<T = string>(client: ClientBase, field: string, subjec
   )
 }
 
-function check_subject_field<T>(client: ClientBase, subject_id: string, field: string): Promise<QueryResult<T>> {
-  return client.query<T>(`select ${ field } from subjects where subject_id = $1`, [subject_id])
-}
-
-type SingleResult<ResultField extends string, T> = {
-  [k in ResultField]: T
+function check_subject_fields<T>(client: ClientBase, subject_id: string, fields: string[]): Promise<QueryResult<T>> {
+  return client.query<T>(`select ${ fields.join(', ') } from subjects where subject_id = $1`, [subject_id])
 }
 
 export function set_test_group(client: ClientBase, subject_id: string, test_group: number) {
@@ -61,19 +57,11 @@ export function set_groups_and_limits(client: ClientBase, updates: [string, numb
 }
 
 export function check_id(client: ClientBase, subject_id: string) {
-  return check_subject_field<SingleResult<'subject_id', string>>(client, subject_id, 'subject_id')
-}
-
-export function check_test_group(client: ClientBase, subject_id: string) {
-  return check_subject_field<SingleResult<'test_group', number>>(client, subject_id, 'test_group')
-}
-
-export function check_treatment_limit(client: ClientBase, subject_id: string) {
-  return check_subject_field<SingleResult<'treatment_limit', number>>(client, subject_id, 'treatment_limit')
+  return check_subject_fields<{ 'subject_id': string }>(client, subject_id, ['subject_id'])
 }
 
 export function check_secret(client: ClientBase, subject_id: string) {
-  return check_subject_field<SingleResult<'secret', string>>(client, subject_id, 'secret')
+  return check_subject_fields<{ 'secret': string }>(client, subject_id, ['secret'])
 }
 
 // reports
