@@ -8,6 +8,8 @@ const http_logger = pino({
   prettyPrint: process.env.NODE_ENV === 'development'
 })
 
+type AnyObject = Record<string, any>
+
 export default async function handle(req: NextApiRequest, res: NextApiResponse): Promise<void> {
   http_logger(req, res)
 
@@ -23,7 +25,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse):
     if (endpoints.hasOwnProperty(endpoint)) return await endpoints[endpoint](req, res, extra)
     return not_found(res)
   } catch (err) {
-    req.log.error(err as object, (err as Record<string, any>).message)
+    req.log.error(err as AnyObject, (err as AnyObject).message)
     res.statusCode = 500
     res.json({ message: JSON.stringify(err) })
   }
