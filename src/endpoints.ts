@@ -1,6 +1,10 @@
 import { ClientBase, DatabaseError } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
-import { add_subject, get_subject_by_subject_id, get_subjects, check_id, check_secret, get_reports, add_reports, DBReport } from '../db/driver'
+import {
+  add_subject, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, set_groups_and_limits,
+  get_reports, add_reports,
+  DBReport
+} from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
 import { nanoid } from 'nanoid'
@@ -81,6 +85,13 @@ const endpoints: EndpointCarrier = {
 
     const subject = result.rows[0]
 
+    if (!subject.identified) {
+      await set_identified(client, subject_id)
+      req.log.info(`subject ${ subject_id } identified`)
+    } else {
+      req.log.info(`subject ${ subject_id } identified again`)
+    }
+
     res.json({
       data: {
         auth_token: subject.secret
@@ -107,6 +118,20 @@ const endpoints: EndpointCarrier = {
     }
   }),
 
+  'set-groups-and-limits': http_post(async (req, res, { auth_token, client }) => {
+    if (auth_token !== admin_token) return forbidden(res)
+
+    const updates = req.body
+
+    if (updates == null || updates.constructor !== Array) return bad_request(res, 'incorrect-format', 'Expecting array of [subject_id, test_group, treatment_limit] triples.')
+
+    await set_groups_and_limits(client, updates)
+
+    req.log.info(`update ${ updates.map(p => `(${ p.join(', ') })`).join(', ') }`)
+
+    res.json({})
+  }),
+
   'add-subject': http_post(async (req, res, { auth_token, client }) => {
       if (auth_token !== admin_token) return forbidden(res)
 
@@ -120,7 +145,9 @@ const endpoints: EndpointCarrier = {
 
       await add_subject(client, subject_id, first_name, last_name, email, nanoid())
 
-      res.json({ subject_id })
+      res.json({
+        data: { subject_id }
+      })
   }),
 
   'get-subject': http_get(async (req, res, { auth_token, client }) => {
@@ -134,7 +161,7 @@ const endpoints: EndpointCarrier = {
       if (result.rows.length !== 0) {
         res.json({ data: result.rows[0] })
       } else {
-        res.json({ data: {} })
+        res.json({})
       }
     } else {
       if (result.rows.length !== 0 && auth_token === result.rows[0].secret) {

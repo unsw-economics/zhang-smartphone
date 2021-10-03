@@ -4,10 +4,12 @@ import endpoints, { EndpointExtra } from '../../src/endpoints'
 import { not_found } from '../../src/response'
 import pino from 'pino-http'
 
-const logger = pino()
+const http_logger = pino({
+  prettyPrint: process.env.NODE_ENV === 'development'
+})
 
 export default async function handle(req: NextApiRequest, res: NextApiResponse): Promise<void> {
-  logger(req, res)
+  http_logger(req, res)
 
   const endpoint = req.query.endpoint as string
 
@@ -21,6 +23,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse):
     if (endpoints.hasOwnProperty(endpoint)) return await endpoints[endpoint](req, res, extra)
     return not_found(res)
   } catch (err) {
+    req.log.error(err as object, (err as Record<string, any>).message)
     res.statusCode = 500
     res.json({ message: JSON.stringify(err) })
   }

@@ -7,7 +7,9 @@ create table subjects (
   subject_id char(12) not null,
   email varchar(120) not null,
   secret char(21) not null,
+  identified boolean not null default false,
   test_group int,
+  treatment_limit int, -- seconds
   unique (subject_id),
   unique (email)
 );
@@ -26,7 +28,7 @@ create table reports (
   application_name varchar(100) not null,
   period report_period not null,
   day int not null,
-  usage_seconds int not null,
+  usage int not null, -- seconds
   constraint fk_subject_id foreign key (subject_id) references subjects(subject_id),
   unique (subject_id, application_name, period, day)
 );
