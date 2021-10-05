@@ -25,7 +25,7 @@ const admin_token = process.env.ADMIN_TOKEN
 
 type RawReport = {
   application_name: string
-  usage_seconds: number
+  usage: number
 }
 
 async function generate_new_id(client: ClientBase) {
@@ -199,7 +199,7 @@ const endpoints: EndpointCarrier = {
     const raw_reports = reports as RawReport[]
 
     const db_reports: DBReport[] = raw_reports.map(
-      r => [subject_id, r.application_name, period, day, r.usage_seconds]
+      r => [subject_id, r.application_name, period, day, r.usage]
     )
 
     await add_reports(client, db_reports)
