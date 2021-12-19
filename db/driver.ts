@@ -52,8 +52,8 @@ function set_fields_on_subjects<T extends any[]>(client: ClientBase, fields: str
   )
 }
 
-export function set_groups_and_limits(client: ClientBase, updates: [string, number, number][]) {
-  return set_fields_on_subjects<[number, number]>(client, ['test_group', 'treatment_limit'], updates, { types: [null, 'int', 'int'] })
+export function set_test_params(client: ClientBase, updates: [string, number, number | null, number][]) {
+  return set_fields_on_subjects<[number, number | null, number]>(client, ['test_group', 'treatment_intensity', 'treatment_limit'], updates, { types: [null, 'int', 'int', 'int'] })
 }
 
 export function check_id(client: ClientBase, subject_id: string) {

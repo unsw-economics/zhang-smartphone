@@ -1,7 +1,7 @@
 import { ClientBase, DatabaseError } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
 import {
-  add_subject, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, set_groups_and_limits,
+  add_subject, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, set_test_params,
   get_reports, add_reports,
   DBReport
 } from '../db/driver'
@@ -99,7 +99,7 @@ const endpoints: EndpointCarrier = {
     })
   }),
 
-  'get-group-and-limit': http_get(async (req, res, { auth_token, client }) => {
+  'get-test-params': http_get(async (req, res, { auth_token, client }) => {
     const { subject_id } = req.query as Record<string, string>
 
     const result = await get_subject_by_subject_id(client, subject_id)
@@ -113,6 +113,7 @@ const endpoints: EndpointCarrier = {
       res.json({
         data: {
           test_group: subject.test_group,
+          treatment_intensity: subject.treatment_intensity,
           treatment_limit: subject.treatment_limit
         }
       })
@@ -121,14 +122,14 @@ const endpoints: EndpointCarrier = {
     }
   }),
 
-  'set-groups-and-limits': http_post(async (req, res, { auth_token, client }) => {
+  'set-test-params': http_post(async (req, res, { auth_token, client }) => {
     if (auth_token !== admin_token) return forbidden(res)
 
     const updates = req.body
 
     if (updates == null || updates.constructor !== Array) return bad_request(res, 'incorrect-format', 'Expecting array of [subject_id, test_group, treatment_limit] triples.')
 
-    await set_groups_and_limits(client, updates)
+    await set_test_params(client, updates)
 
     req.log.info(`update ${ updates.map(p => `(${ p.join(', ') })`).join(', ') }`)
 

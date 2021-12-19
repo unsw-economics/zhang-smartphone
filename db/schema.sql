@@ -9,6 +9,7 @@ create table subjects (
   secret char(21) not null,
   identified boolean not null default false,
   test_group int,
+  treatment_intensity int,
   treatment_limit int, -- seconds
   unique (subject_id),
   unique (email)
