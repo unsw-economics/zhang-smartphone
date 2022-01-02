@@ -4,7 +4,7 @@ import { ClientBase, QueryResult } from 'pg'
 
 export function add_subject(client: ClientBase, subject_id: string, email: string, secret: string) {
   return client.query(
-    'insert into subjects (subject_id, email, secret) values ($1, $2, $3, $4, $5)',
+    'insert into subjects (subject_id, email, secret) values ($1, $2, $3)',
     [subject_id, email, secret]
   )
 }
