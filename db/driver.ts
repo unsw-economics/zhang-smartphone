@@ -9,6 +9,13 @@ export function add_subject(client: ClientBase, subject_id: string, email: strin
   )
 }
 
+export function update_subject_id(client: ClientBase, subject_id: string, email: string) {
+  return client.query(
+    'update subjects set subject_id = $1 where email = $2',
+    [subject_id, email]
+  )
+}
+
 export function get_subject_by_subject_id(client: ClientBase, subject_id: string) {
   return client.query('select * from subjects where subject_id = $1', [subject_id])
 }
@@ -62,6 +69,10 @@ export function check_id(client: ClientBase, subject_id: string) {
 
 export function check_secret(client: ClientBase, subject_id: string) {
   return check_subject_fields<{ 'secret': string }>(client, subject_id, ['secret'])
+}
+
+export async function email_exists(client: ClientBase, email: string): Promise<boolean> {
+  return (await client.query<{ 'count': number }>(`select count(*) from subjects where email = '${ email }'`)).rows[0].count > 0
 }
 
 // reports

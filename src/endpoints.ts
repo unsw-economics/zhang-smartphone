@@ -1,7 +1,7 @@
 import { ClientBase, DatabaseError } from 'pg'
 import { NextApiRequest, NextApiResponse } from 'next'
 import {
-  add_subject, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, set_test_params,
+  add_subject, update_subject_id, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, email_exists, set_test_params,
   get_reports, add_reports,
   DBReport
 } from '../db/driver'
@@ -142,9 +142,14 @@ const endpoints: EndpointCarrier = {
 
       const { subject_id, email } = req.body
 
+      if (subject_id == null) return bad_request(res, 'missing-field', 'Missing subject ID.')
       if (email == null) return bad_request(res, 'missing-field', 'Missing email.')
 
-      await add_subject(client, subject_id, email, nanoid())
+      if (await email_exists(client, email)) {
+        await update_subject_id(client, subject_id, email)
+      } else {
+        await add_subject(client, subject_id, email, nanoid())
+      }
 
       res.json({
         data: { subject_id }
