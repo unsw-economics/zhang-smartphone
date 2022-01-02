@@ -22,6 +22,7 @@ export type EndpointCarrier = {
 }
 
 const admin_token = process.env.ADMIN_TOKEN
+const qualtrics_token = process.env.QUALTRICS_TOKEN
 
 type RawReport = {
   application_name: string
@@ -137,17 +138,13 @@ const endpoints: EndpointCarrier = {
   }),
 
   'add-subject': http_post(async (req, res, { auth_token, client }) => {
-      if (auth_token !== admin_token) return forbidden(res)
+      if (auth_token !== qualtrics_token && auth_token !== admin_token) return forbidden(res)
 
-      const { first_name, last_name, email } = req.body
+      const { subject_id, email } = req.body
 
-      if (first_name == null) return bad_request(res, 'missing-field', 'Missing first name.')
-      if (last_name == null) return bad_request(res, 'missing-field', 'Missing last name.')
       if (email == null) return bad_request(res, 'missing-field', 'Missing email.')
 
-      const subject_id = await generate_new_id(client)
-
-      await add_subject(client, subject_id, first_name, last_name, email, nanoid())
+      await add_subject(client, subject_id, email, nanoid())
 
       res.json({
         data: { subject_id }
