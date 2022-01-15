@@ -8,7 +8,7 @@ const g = global as Global
 
 const { DB_HOST, DB_USER, DB_PASS, DB_NAME } = process.env
 
-export default async function(options: Record<any, unknown>): Promise<ClientBase> {
+export default async function(options: Record<any, unknown> = {}): Promise<ClientBase> {
   if (g.pg_client != null) return g.pg_client
 
   const client = new Client({
