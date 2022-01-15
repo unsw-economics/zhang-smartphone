@@ -3,11 +3,13 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import {
   add_subject, update_subject_id, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, email_exists, set_test_params,
   get_reports, add_reports,
+  add_crash_report,
   DBReport
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
 import { nanoid } from 'nanoid'
+import { writeFileSync } from 'fs'
 
 export type EndpointExtra = {
   method: string
@@ -230,6 +232,12 @@ const endpoints: EndpointCarrier = {
     const result = await get_reports(client)
 
     res.json({ data: result.rows })
+  }),
+
+  'acra': http_post(async (req, res, { auth_token, client }) => {
+    await add_crash_report(client, req.body.CUSTOM_DATA.SUBJECT_ID || null, JSON.stringify(req.body))
+
+    res.json({})
   })
 }
 

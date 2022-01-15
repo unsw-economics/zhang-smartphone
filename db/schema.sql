@@ -1,5 +1,7 @@
 drop table if exists subjects cascade;
 drop table if exists reports cascade;
+drop table if exists crash_reports cascade;
+
 drop type if exists report_period;
 
 create table subjects (
@@ -36,4 +38,12 @@ create table reports (
 
 create index reports_subject_id on reports (subject_id);
 create index reports_application_name on reports (application_name);
+
+create table crash_reports (
+  id serial primary key not null,
+  subject_id char(12),
+  report text not null
+);
+
+create index crash_reports_subject_id on crash_reports (subject_id);
 

@@ -118,3 +118,9 @@ function expand_args(rows: number, columns: number, options?: ExpandOptions): st
   return params.join(',')
 }
 
+// crash reports
+
+export function add_crash_report(client: ClientBase, subject_id: string | null, report: string) {
+  return client.query('insert into crash_reports (subject_id, report) values ($1, $2)', [subject_id, report])
+}
+
