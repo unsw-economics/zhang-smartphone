@@ -16,6 +16,7 @@
     "@types/pino-http": "^5.8.0",
     "@types/react": "^17.0.19",
     "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "csv-parse": "^5.0.4",
     "eslint": "^7.32.0",
     "eslint-config-next": "11.1.2",
     "pino-pretty": "^7.0.1",
