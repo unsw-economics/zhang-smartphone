@@ -23,7 +23,7 @@ create index subjects_test_group on subjects (test_group);
 -- null secret means the user has not identified
 -- test_group to be assigned once all subject surveys collected
 
-create type report_period as enum ('baseline', 'experiment');
+create type report_period as enum ('baseline', 'experiment', 'endline');
 
 create table reports (
   id serial primary key not null,
