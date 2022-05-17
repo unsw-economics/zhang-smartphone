@@ -238,6 +238,11 @@ const endpoints: EndpointCarrier = {
     await add_crash_report(client, req.body.CUSTOM_DATA.SUBJECT_ID || null, JSON.stringify(req.body))
 
     res.json({})
+  }),
+
+  'get-dates': http_get(async (req, res, { auth_token, client }) => {
+    const { subject_id } = req.query as Record<string, string>
+    res.json({data: {baseline_date: '2022-05-26', treatment_date: '2022-06-10', endline_date: '2022-07-08', over_date: '2022-07-22'}})
   })
 }
 
