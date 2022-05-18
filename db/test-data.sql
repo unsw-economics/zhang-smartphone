@@ -2,9 +2,13 @@ truncate subjects cascade;
 truncate reports cascade;
 
 insert into study_dates(period_name, baseline_date, treatment_date, endline_date, over_date, is_default) values 
-  ('22T0', '2022-01-01', '2022-01-15', '2022-01-29', '2022-02-05', false),
-  ('22T0_testing', '2021-12-15', '2021-12-17', '2021-12-19', '2021-12-20', false),
-  ('generic_testing_data', '2022-01-01', '2022-01-01', '2022-01-01', '2022-01-01', true);
+  ('22T1_testing', '2022-01-06', '2022-01-17', '2022-02-14', '2022-02-21', false),
+  ('22T1', '2022-02-14', '2022-02-27', '2022-03-27', '2022-04-10', false),
+  ('22T2_testing', '2022-05-19', '2022-05-21', '2022-05-24', '2022-05-26', false),
+  ('22T2', '2022-05-26', '2022-06-10', '2022-07-08', '2022-07-22', false),
+  ('generic_testing_data', '2022-01-01', '2022-01-01', '2022-01-01', '2022-01-01', true),
+  ('future_dates_for_testing', '2024-01-01', '2024-01-02', '2024-01-03', '2024-01-04', false),
+  ('use_hardcoded_dates', null, null, null, null, false);
 
 insert into subjects (subject_id, email, secret, test_group, treatment_intensity, treatment_limit) values
   ('aaaaaa000000', 'raphaeljmu@gmail.com', 'kzVs3AvG-nFLV3vZEzenT', 0, null, null),
@@ -19,8 +23,9 @@ insert into subjects (subject_id, email, secret, test_group, treatment_intensity
   ('zzzzzzzzzzzz', 'test@gmail.com', 'zzzzzzzzzzzzzzzzzzzzz', null, null, null);
 
 insert into subjects (subject_id, email, secret, test_group, treatment_intensity, treatment_limit, study_group) values
-  ('subjectid1', 'example@email.com', 'secret', 0, null, null, '22T0_testing'),
-  ('subjectid2', 'testing@gmail.com', 'secret', 1, null, 1800, '22T0');
+  ('subjectid1', 'example@email.com', 'secret', 0, null, null, 'use_hardcoded_dates'),
+  ('futureid', 'future@email.com', 'secret', 0, null, null, 'future_dates_for_testing'),
+  ('subjectid2', 'testing@gmail.com', 'secret', 1, null, 1800, 'use_hardcoded_dates');
 
 insert into reports (subject_id, application_name, period, day, usage) values
   ('zzzzzzzzzzzz', 'com.instagram.android', 'baseline', 0, 100),
