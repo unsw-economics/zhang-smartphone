@@ -90,6 +90,12 @@ export function add_reports(client: ClientBase, app_reports: DBReport[]) {
   )
 }
 
+export async function get_study_dates(client: ClientBase, subject_id: string): Promise<{baseline_date: string; treatment_date: string; endline_date: string; over_date: string;}> {
+  return (await client.query(
+    `select baseline_date::text, treatment_date::text, endline_date::text, over_date::text from subjects s join study_dates d on s.study_group = d.period_name where s.subject_id = $1`,
+    [subject_id])).rows[0] || {baseline_date: null, treatment_date: null, endline_date: null, over_date: null}
+}
+
 type ExpandOptions = {
   types?: (string | null)[],
   start_index?: number

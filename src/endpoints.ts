@@ -4,7 +4,8 @@ import {
   add_subject, update_subject_id, get_subject_by_subject_id, get_subjects, set_identified, check_id, check_secret, email_exists, set_test_params,
   get_reports, add_reports,
   add_crash_report,
-  DBReport
+  DBReport,
+  get_study_dates
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
@@ -238,6 +239,14 @@ const endpoints: EndpointCarrier = {
     await add_crash_report(client, req.body.CUSTOM_DATA.SUBJECT_ID || null, JSON.stringify(req.body))
 
     res.json({})
+  }),
+
+  'get-dates': http_get(async (req, res, { auth_token, client }) => {
+    const { subject_id } = req.query as Record<string, string>
+
+    const studyDates = await get_study_dates(client, subject_id)
+
+    res.json({data: studyDates})
   })
 }
 
