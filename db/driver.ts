@@ -130,3 +130,16 @@ export function add_crash_report(client: ClientBase, subject_id: string | null, 
   return client.query('insert into crash_reports (subject_id, report) values ($1, $2)', [subject_id, report])
 }
 
+interface usageHash {
+  [key:string]: number;
+}
+
+export function add_usage(client: ClientBase, subject_id: string, usage: usageHash) {
+  
+  const usage_array = Object.keys(usage).map((key) => [subject_id, key, usage[key]])
+
+  return client.query(
+    `insert into usage_backup (subject_id, date_reported, usage) values ${ expand_args(Object.keys(usage).length, 3) }`,
+    usage_array.flat()
+  )
+}

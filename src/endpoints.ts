@@ -5,7 +5,8 @@ import {
   get_reports, add_reports,
   add_crash_report,
   DBReport,
-  get_study_dates
+  get_study_dates,
+  add_usage
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden } from './response'
@@ -247,6 +248,20 @@ const endpoints: EndpointCarrier = {
     const studyDates = await get_study_dates(client, subject_id)
 
     res.json({data: studyDates})
+  }),
+
+  'submit-usage': http_post(async (req, res, { auth_token, client }) => {
+    const { subject_id, usage } = req.body
+
+    if (auth_token !== admin_token) {
+      const result = await check_secret(client, subject_id)
+
+      if (result.rows.length === 0 || auth_token !== result.rows[0].secret) return forbidden(res)
+    }
+
+    await add_usage(client, subject_id, usage)
+
+    res.json({})
   })
 }
 
