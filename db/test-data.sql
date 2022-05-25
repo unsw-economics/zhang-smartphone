@@ -25,12 +25,12 @@ insert into subjects (subject_id, email, secret, test_group, treatment_intensity
 
 insert into subjects (subject_id, email, secret, test_group, treatment_intensity, treatment_limit, study_group) values
   ('a', 'imlazya@email.com', 'secretsecretsecretsec', 0, null, null, '22T2'),
-  ('b', 'imlazyb@email.com', 'secretsecretsecretsec', 1, null, 80000, '22T2'),
-  ('c', 'imlazyc@email.com', 'secretsecretsecretsec', 2, 10, 80000, '22T2'),
+  ('b', 'imlazyb@email.com', 'secretsecretsecretsec', 1, null, 90000, '22T2'),
+  ('c', 'imlazyc@email.com', 'secretsecretsecretsec', 2, 10, 90000, '22T2'),
   ('subjectid1', 'example@email.com', 'secretsecretsecretsec', 0, null, null, 'use_hardcoded_dates'),
   ('futureid', 'future@email.com', 'secretsecretsecretsec', 0, null, null, 'future_dates_for_testing'),
-  ('info', 'info@email.com', 'secretsecretsecretsec', 1, null, 80000, 'always_treatment_for_testing'),
-  ('incentive', 'incentive@email.com', 'secretsecretsecretsec', 2, 10, 80000, 'always_treatment_for_testing'),
+  ('info', 'info@email.com', 'secretsecretsecretsec', 1, null, 90000, 'always_treatment_for_testing'),
+  ('incentive', 'incentive@email.com', 'secretsecretsecretsec', 2, 10, 90000, 'always_treatment_for_testing'),
   ('subjectid2', 'testing@gmail.com', 'secretsecretsecretsec', 1, null, 1800, 'use_hardcoded_dates');
 
 insert into reports (subject_id, application_name, period, day, usage) values
