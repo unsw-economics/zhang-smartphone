@@ -82,7 +82,7 @@ create index crash_reports_subject_id on crash_reports (subject_id);
 create table usage_backup (
   id serial primary key not null,
   subject_id char(12) not null,
-  date_inserted timestamp not null default now(),
+  date_inserted timestamp not null default current_timestamp at time zone 'Australia/Sydney',
   date_reported date not null,
   usage int not null -- seconds
 );
