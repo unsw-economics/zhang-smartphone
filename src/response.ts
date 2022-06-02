@@ -15,3 +15,7 @@ export function not_found(res: NextApiResponse) {
   res.end()
 }
 
+export function ok(res: NextApiResponse) {
+  res.statusCode = 200
+  res.end()
+}

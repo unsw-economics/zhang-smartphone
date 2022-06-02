@@ -9,7 +9,7 @@ import {
   add_usage
 } from '../db/driver'
 import { generate_id } from './subject'
-import { bad_request, forbidden } from './response'
+import { bad_request, forbidden, ok } from './response'
 import { nanoid } from 'nanoid'
 import { writeFileSync } from 'fs'
 
@@ -52,6 +52,11 @@ async function generate_new_id(client: ClientBase) {
 
 function http_get(endpoint: Endpoint): Endpoint {
   return async function(req, res, extra) {
+
+    if(extra.method === 'OPTIONS') {
+      return ok(res)
+    }
+    
     if (extra.method !== 'GET') return bad_request(
       res,
       'wrong-method',
