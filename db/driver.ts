@@ -21,7 +21,7 @@ export function get_subject_by_subject_id(client: ClientBase, subject_id: string
 }
 
 export function get_subjects(client: ClientBase) {
-  return client.query('select * from subjects')
+  return client.query('select * from subjects_view')
 }
 
 function set_subject_field<T = string>(client: ClientBase, field: string, subject_id: string, value: T) {

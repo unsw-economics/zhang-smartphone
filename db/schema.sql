@@ -95,14 +95,12 @@ create or replace view usage_view as
     study_group, 
     date_reported, 
     max(usage) as usage,
-
     case
       when date_reported < d.treatment_date then 'baseline'
       when date_reported < d.endline_date then 'experiment'
       when date_reported < d.over_date then 'endline'
       else 'over'
     end as period,
-    -- Calculate days since the start of the period from the date reported
     case 
       when date_reported < d.treatment_date then (date_reported - d.baseline_date)::int
       when date_reported < d.endline_date then (date_reported - d.treatment_date)::int
@@ -114,5 +112,36 @@ create or replace view usage_view as
   on u.subject_id=s.subject_id 
   join study_dates d
   on s.study_group=d.period_name
-  group by u.subject_id, date_reported, study_group, d.baseline_date, d.treatment_date, d.endline_date, d.over_date
+  group by 
+    u.subject_id, 
+    date_reported, 
+    study_group, 
+    d.baseline_date, 
+    d.treatment_date, 
+    d.endline_date, 
+    d.over_date
   order by study_group, u.subject_id, date_reported asc;
+
+drop view if exists subjects_view;
+create or replace view subjects_view as 
+  select 
+    s.subject_id, 
+    s.email, 
+    s.identified, 
+    s.test_group, 
+    s.treatment_intensity, 
+    s.treatment_limit, 
+    s.study_group,
+    max(u.date_inserted) as last_activity
+  from subjects s 
+  left outer join usage_backup u 
+  on s.subject_id=u.subject_id
+  group by 
+    s.subject_id, 
+    s.email, 
+    s.identified, 
+    s.test_group, 
+    s.treatment_intensity, 
+    s.treatment_limit, 
+    s.study_group
+  order by s.study_group, s.subject_id;
