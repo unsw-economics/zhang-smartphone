@@ -87,3 +87,11 @@ create table usage_backup (
   date_reported date not null,
   usage int not null -- seconds
 );
+
+create view usage_view as 
+  select u.subject_id, date_reported, max(usage) 
+  from usage_backup u 
+  join subjects s 
+  on u.subject_id=s.subject_id 
+  group by u.subject_id, date_reported 
+  order by u.subject_id, date_reported asc;

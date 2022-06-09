@@ -7,7 +7,8 @@ import {
   DBReport,
   get_study_dates,
   add_usage,
-  get_all_study_dates
+  get_all_study_dates,
+  get_all_usage
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden, ok } from './response'
@@ -280,6 +281,14 @@ const endpoints: EndpointCarrier = {
 
     const result = await get_all_study_dates(client)
   
+    res.json({ data: result.rows })
+  }),
+
+  'get-all-usage': http_get(async (req, res, { auth_token, client }) => {
+    if (auth_token !== admin_token) return forbidden(res)
+
+    const result = await get_all_usage(client)
+
     res.json({ data: result.rows })
   }),
 }
