@@ -6,7 +6,8 @@ import {
   add_crash_report,
   DBReport,
   get_study_dates,
-  add_usage
+  add_usage,
+  get_all_study_dates
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden, ok } from './response'
@@ -69,6 +70,11 @@ function http_get(endpoint: Endpoint): Endpoint {
 
 function http_post(endpoint: Endpoint): Endpoint {
   return async function(req, res, extra) {
+
+    if(extra.method === 'OPTIONS') {
+      return ok(res)
+    }
+
     if (extra.method !== 'POST') return bad_request(
       res,
       'wrong-method',
@@ -267,7 +273,15 @@ const endpoints: EndpointCarrier = {
     await add_usage(client, subject_id, usage)
 
     res.json({})
-  })
+  }),
+
+  'get-all-dates': http_get(async (req, res, { auth_token, client }) => {
+    if (auth_token !== admin_token) return forbidden(res)
+
+    const result = await get_all_study_dates(client)
+  
+    res.json({ data: result.rows })
+  }),
 }
 
 export default endpoints

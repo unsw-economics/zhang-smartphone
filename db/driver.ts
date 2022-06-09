@@ -143,3 +143,7 @@ export function add_usage(client: ClientBase, subject_id: string, usage: usageHa
     usage_array.flat()
   )
 }
+
+export function get_all_study_dates(client: ClientBase) {
+  return client.query('select * from study_dates')
+}
