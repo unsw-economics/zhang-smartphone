@@ -125,6 +125,7 @@ create or replace view usage_view as
 drop view if exists subjects_view;
 create or replace view subjects_view as 
   select 
+    s.id,
     s.subject_id, 
     s.email, 
     s.identified, 
@@ -132,11 +133,13 @@ create or replace view subjects_view as
     s.treatment_intensity, 
     s.treatment_limit, 
     s.study_group,
+    s.date_inserted,
     max(u.date_inserted) as last_activity
   from subjects s 
   left outer join usage_backup u 
   on s.subject_id=u.subject_id
   group by 
+    s.id,
     s.subject_id, 
     s.email, 
     s.identified, 
