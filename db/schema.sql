@@ -88,10 +88,10 @@ create table usage_backup (
   usage int not null -- seconds
 );
 
-create view usage_view as 
-  select u.subject_id, date_reported, max(usage) 
+create or replace view usage_view as 
+  select u.subject_id, study_group, date_reported, max(usage) as usage
   from usage_backup u 
   join subjects s 
   on u.subject_id=s.subject_id 
-  group by u.subject_id, date_reported 
-  order by u.subject_id, date_reported asc;
+  group by u.subject_id, date_reported, study_group
+  order by study_group, u.subject_id, date_reported asc;
