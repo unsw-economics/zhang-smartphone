@@ -210,7 +210,7 @@ create or replace view summary_view as
     coalesce(days_under_limit, 0) as days_under_limit,
     avg_baseline_usage,
     baseline_report_days,
-    date_inserted,
+    date_inserted as latest_sign_in,
     s.study_group
   from subjects s 
   left join baseline_view b on b.subject_id=s.subject_id 
