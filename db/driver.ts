@@ -153,5 +153,5 @@ export function get_all_usage(client: ClientBase) {
 }
 
 export function get_usage_summary(client: ClientBase, subject_id: string) {
-  return client.query('select * from summary_view where study_group=?', [subject_id])
+  return client.query('select * from summary_view', [subject_id])
 }
