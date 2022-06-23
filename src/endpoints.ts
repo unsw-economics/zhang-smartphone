@@ -294,11 +294,9 @@ const endpoints: EndpointCarrier = {
   }),
 
   'get-usage-summary': http_get(async (req, res, { auth_token, client }) => {
-    const { study_group } = req.query as Record<string, string>
-
     if (auth_token !== admin_token) return forbidden(res)
 
-    const result = await get_usage_summary(client, study_group)
+    const result = await get_usage_summary(client)
 
     res.json({ data: result.rows })
   }),
