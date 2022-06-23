@@ -209,7 +209,9 @@ create or replace view summary_view as
     coalesce(treatment_report_days, 0) as treatment_report_days,
     coalesce(days_under_limit, 0) as days_under_limit,
     avg_baseline_usage,
-    baseline_report_days
+    baseline_report_days,
+    date_inserted,
+    s.study_group
   from subjects s 
   left join baseline_view b on b.subject_id=s.subject_id 
   left join experiement_view e on e.subject_id=s.subject_id 

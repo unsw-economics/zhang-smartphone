@@ -8,7 +8,8 @@ import {
   get_study_dates,
   add_usage,
   get_all_study_dates,
-  get_all_usage
+  get_all_usage,
+  get_usage_summary
 } from '../db/driver'
 import { generate_id } from './subject'
 import { bad_request, forbidden, ok } from './response'
@@ -288,6 +289,16 @@ const endpoints: EndpointCarrier = {
     if (auth_token !== admin_token) return forbidden(res)
 
     const result = await get_all_usage(client)
+
+    res.json({ data: result.rows })
+  }),
+
+  'get-usage-summary': http_get(async (req, res, { auth_token, client }) => {
+    const { study_group } = req.query as Record<string, string>
+
+    if (auth_token !== admin_token) return forbidden(res)
+
+    const result = await get_usage_summary(client, study_group)
 
     res.json({ data: result.rows })
   }),
