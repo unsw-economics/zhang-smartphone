@@ -198,7 +198,9 @@ const endpoints: EndpointCarrier = {
   'get-all-subjects': http_get(async (req, res, { auth_token, client }) => {
     if (auth_token !== admin_token) return forbidden(res)
 
-    const result = await get_subjects(client)
+    const { group } = req.query as Record<string, string | null>
+
+    const result = await get_subjects(client, group)
 
     res.json({ data: result.rows })
   }),

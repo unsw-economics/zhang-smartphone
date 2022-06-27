@@ -147,7 +147,7 @@ create or replace view subjects_view as
     s.treatment_intensity, 
     s.treatment_limit, 
     s.study_group
-  order by s.study_group, s.subject_id;
+  order by s.study_group, s.id;
 
 -- Baseline
 drop view if exists baseline_view;
