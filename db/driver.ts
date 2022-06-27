@@ -22,7 +22,7 @@ export function get_subject_by_subject_id(client: ClientBase, subject_id: string
 
 export function get_subjects(client: ClientBase, group?: string) {
   if (group) {
-    return client.query("select * from subjects_view where test_group = $1", [
+    return client.query("select * from subjects_view where study_group = $1", [
       group,
     ]);
   }
