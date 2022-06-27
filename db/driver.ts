@@ -270,7 +270,7 @@ export function get_all_usage(client: ClientBase) {
 
 export function get_usage_summary(client: ClientBase, group?: string) {
   if (group) {
-    return client.query("select * from usage_summary where period_name = $1", [
+    return client.query("select * from summary_view where study_group = $1", [
       group,
     ]);
   }
