@@ -268,6 +268,11 @@ export function get_all_usage(client: ClientBase) {
   return client.query("select * from usage_view");
 }
 
-export function get_usage_summary(client: ClientBase) {
+export function get_usage_summary(client: ClientBase, group?: string) {
+  if (group) {
+    return client.query("select * from usage_summary where period_name = $1", [
+      group,
+    ]);
+  }
   return client.query("select * from summary_view");
 }
