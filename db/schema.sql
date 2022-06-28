@@ -88,8 +88,8 @@ create table usage_backup (
   usage int not null -- seconds
 );
 
-drop view if exists usage_view;
-create or replace view usage_view as 
+drop view if exists simple_usage_view cascade;
+create or replace view simple_usage_view as 
   select 
     u.subject_id, 
     study_group, 
@@ -122,7 +122,39 @@ create or replace view usage_view as
     d.over_date
   order by study_group, u.subject_id, date_reported asc;
 
-drop view if exists subjects_view;
+drop view if exists detailed_usage_view cascade;
+create or replace view detailed_usage_view as 
+  select 
+    r.subject_id, 
+    s.study_group,
+    r.period, 
+    r.day,
+    sum(r.usage) as usage
+  from reports r join subjects s on s.subject_id=r.subject_id
+  group by r.subject_id, period, day, s.study_group
+  order by period, r.subject_id, day;
+
+drop view if exists usage_view cascade;
+create or replace view usage_view as 
+  select 
+    coalesce(d.subject_id, s.subject_id) as subject_id,
+    coalesce(d.study_group, s.study_group) as study_group,
+    coalesce(d.period::text, s.period) as period,
+    coalesce(d.day, s.day) as day,
+    coalesce(s.date_reported, '01-01-1970') as date_reported,
+    s.usage as simple_usage,
+    d.usage as detailed_usage,
+    (case 
+      when d.usage is null then s.usage
+      else d.usage
+    end) as usage
+  from detailed_usage_view d 
+  full join simple_usage_view s 
+  on d.subject_id=s.subject_id 
+  and d.period::text=s.period 
+  and d.day=s.day;
+
+drop view if exists subjects_view cascade;
 create or replace view subjects_view as 
   select 
     s.id,
@@ -150,7 +182,7 @@ create or replace view subjects_view as
   order by s.study_group, s.id;
 
 -- Baseline
-drop view if exists baseline_view;
+drop view if exists baseline_view cascade;
 create or replace view baseline_view as 
   select 
     s.subject_id, 
@@ -169,7 +201,7 @@ create or replace view baseline_view as
   group by s.subject_id, s.test_group, s.study_group;
 
 -- Experiment (Main)
-drop view if exists experiement_view;
+drop view if exists experiement_view cascade;
 create or replace view experiement_view as 
   select 
     s.subject_id, 
@@ -185,7 +217,7 @@ create or replace view experiement_view as
   group by s.subject_id, s.test_group, s.treatment_limit, s.study_group;
 
 -- Experiment (Days)
-drop view if exists limits_view;
+drop view if exists limits_view cascade;
 create or replace view limits_view as 
   select 
     s.subject_id, 
@@ -200,7 +232,7 @@ create or replace view limits_view as
   order by s.subject_id;
 
 -- Combine all the views together
-drop view if exists summary_view;
+drop view if exists summary_view cascade;
 create or replace view summary_view as 
   select 
     s.subject_id, 
