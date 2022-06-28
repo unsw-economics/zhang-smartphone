@@ -190,7 +190,7 @@ create or replace view baseline_view as
     count(case usage when 0 then null else 1 end) as baseline_report_days,
     case 
       when count(case usage when 0 then null else 1 end) = 0 then 0 
-      else sum(usage) / count(case usage when 0 then null else 1 end)
+      else (sum(usage) / count(case usage when 0 then null else 1 end))::int
     end as avg_baseline_usage,
     s.study_group
   from subjects s 
@@ -206,7 +206,7 @@ create or replace view experiement_view as
   select 
     s.subject_id, 
     s.test_group, 
-    sum(usage) / count(usage) as avg_treatment_usage,
+    (sum(usage) / count(usage))::int as avg_treatment_usage,
     count(usage) as treatment_report_days,
     s.study_group
   from subjects s 
@@ -248,4 +248,5 @@ create or replace view summary_view as
   left join baseline_view b on b.subject_id=s.subject_id 
   left join experiement_view e on e.subject_id=s.subject_id 
   left join limits_view l on l.subject_id=s.subject_id
-  where identified=true; 
+  where identified=true
+  order by treatment_report_days desc, baseline_report_days desc, s.subject_id; 
