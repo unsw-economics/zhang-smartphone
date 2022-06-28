@@ -325,7 +325,9 @@ const endpoints: EndpointCarrier = {
   "get-all-usage": http_get(async (req, res, { auth_token, client }) => {
     if (auth_token !== admin_token) return forbidden(res);
 
-    const result = await get_all_usage(client);
+    const { group } = req.query as Record<string, string | undefined>;
+
+    const result = await get_all_usage(client, group);
 
     res.json({ data: result.rows });
   }),

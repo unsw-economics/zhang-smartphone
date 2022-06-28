@@ -264,7 +264,13 @@ export function get_all_study_dates(client: ClientBase) {
   return client.query("select * from study_dates");
 }
 
-export function get_all_usage(client: ClientBase) {
+export function get_all_usage(client: ClientBase, group?: string) {
+  if (group) {
+    return client.query(`select * from usage_view where study_group = $1`, [
+      group,
+    ]);
+  }
+
   return client.query("select * from usage_view");
 }
 
