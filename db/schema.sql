@@ -186,50 +186,32 @@ drop view if exists baseline_view cascade;
 create or replace view baseline_view as 
   select 
     s.subject_id, 
-    s.test_group, 
     count(case usage when 0 then null else 1 end) as baseline_report_days,
     case 
       when count(case usage when 0 then null else 1 end) = 0 then 0 
       else (sum(usage) / count(case usage when 0 then null else 1 end))::int
-    end as avg_baseline_usage,
-    s.study_group
+    end as avg_baseline_usage
   from subjects s 
-  left join usage_view u 
+  join usage_view u 
   on u.subject_id=s.subject_id 
   where s.identified=true 
   and period='baseline' 
-  group by s.subject_id, s.test_group, s.study_group;
+  group by s.subject_id;
 
 -- Experiment (Main)
 drop view if exists experiement_view cascade;
 create or replace view experiement_view as 
   select 
     s.subject_id, 
-    s.test_group, 
     (sum(usage) / count(usage))::int as avg_treatment_usage,
     count(usage) as treatment_report_days,
-    s.study_group
+    count(case when u.usage <= s.treatment_limit then null else 1 end) as days_under_limit
   from subjects s 
-  left join usage_view u 
+  join usage_view u 
   on u.subject_id=s.subject_id 
   where s.identified=true 
   and period='experiment' 
-  group by s.subject_id, s.test_group, s.treatment_limit, s.study_group;
-
--- Experiment (Days)
-drop view if exists limits_view cascade;
-create or replace view limits_view as 
-  select 
-    s.subject_id, 
-    count(usage) as days_under_limit,
-    s.study_group
-  from subjects s 
-  join usage_view u 
-  on s.subject_id=u.subject_id 
-  where period='experiment' 
-    and u.usage <= s.treatment_limit 
-  group by s.subject_id, s.study_group, s.test_group
-  order by s.subject_id;
+  group by s.subject_id, s.treatment_limit;
 
 -- Combine all the views together
 drop view if exists summary_view cascade;
@@ -245,8 +227,65 @@ create or replace view summary_view as
     date_inserted as latest_sign_in,
     s.study_group
   from subjects s 
-  left join baseline_view b on b.subject_id=s.subject_id 
-  left join experiement_view e on e.subject_id=s.subject_id 
-  left join limits_view l on l.subject_id=s.subject_id
+  join baseline_view b on b.subject_id=s.subject_id 
+  join experiement_view e on e.subject_id=s.subject_id 
   where identified=true
-  order by treatment_report_days desc, baseline_report_days desc, s.subject_id; 
+  order by treatment_report_days desc, baseline_report_days desc, s.subject_id;
+
+-- Function to calculate usage between given dates inclusive
+drop function if exists calculate_usage cascade;
+create or replace function calculate_usage(start_date date, end_date date)
+  returns table(subject_id char(12), 
+    test_group int,
+    avg_treatment_usage int,
+    treatment_report_days bigint,
+    days_under_limit bigint,
+    avg_baseline_usage int,
+    baseline_report_days bigint,
+    latest_sign_in timestamp,
+    study_group varchar(100))
+  as $$
+begin
+  return query
+  select 
+    s.subject_id, 
+    s.test_group,
+    coalesce(e.avg_treatment_usage, 0) as avg_treatment_usage,
+    coalesce(e.treatment_report_days, 0) as treatment_report_days,
+    coalesce(e.days_under_limit, 0) as days_under_limit,
+    b.avg_baseline_usage,
+    b.baseline_report_days,
+    date_inserted as latest_sign_in,
+    s.study_group
+  from subjects s 
+  left outer join (select 
+    s.subject_id, 
+    count(case usage when 0 then null else 1 end) as baseline_report_days,
+    case 
+      when count(case usage when 0 then null else 1 end) = 0 then 0 
+      else (sum(usage) / count(case usage when 0 then null else 1 end))::int
+    end as avg_baseline_usage
+  from subjects s 
+  join usage_view u 
+  on u.subject_id=s.subject_id 
+  where s.identified=true 
+  and period='baseline'
+  and u.date_reported between start_date and end_date
+  group by s.subject_id
+) as b on b.subject_id=s.subject_id 
+  left outer join (select 
+    s.subject_id, 
+    (sum(usage) / count(usage))::int as avg_treatment_usage,
+    count(usage) as treatment_report_days,
+    count(case when u.usage <= s.treatment_limit then null else 1 end) as days_under_limit
+  from subjects s 
+  join usage_view u 
+  on u.subject_id=s.subject_id 
+  where s.identified=true 
+  and period='experiment'
+  and u.date_reported between start_date and end_date
+  group by s.subject_id, s.treatment_limit
+) as e on e.subject_id=s.subject_id 
+  where identified=true
+  order by treatment_report_days desc, baseline_report_days desc, s.subject_id;
+end; $$ language plpgsql;
