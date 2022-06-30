@@ -281,10 +281,8 @@ export function get_usage_summary(
   end_date?: string
 ) {
   if (group && start_date && end_date) {
-    return (
-      client.query(
-        "select * from calculate_usage($1, $2) where study_group=$3"
-      ),
+    return client.query(
+      "select * from calculate_usage($1, $2) where study_group=$3",
       [start_date, end_date, group]
     );
   }
