@@ -274,7 +274,21 @@ export function get_all_usage(client: ClientBase, group?: string) {
   return client.query("select * from usage_view");
 }
 
-export function get_usage_summary(client: ClientBase, group?: string) {
+export function get_usage_summary(
+  client: ClientBase,
+  group?: string,
+  start_date?: string,
+  end_date?: string
+) {
+  if (group && start_date && end_date) {
+    return (
+      client.query(
+        "select * from calculate_usage($1, $2) where study_group=$3"
+      ),
+      [start_date, end_date, group]
+    );
+  }
+
   if (group) {
     return client.query("select * from summary_view where study_group = $1", [
       group,
