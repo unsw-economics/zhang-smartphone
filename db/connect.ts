@@ -1,28 +1,32 @@
-import { Client, ClientBase } from 'pg'
+import { Client, ClientBase } from "pg";
 
 interface Global {
-  pg_client?: ClientBase
+  pg_client?: ClientBase;
 }
 
-const g = global as Global
+const g = global as Global;
 
-const { DB_HOST, DB_USER, DB_PASS, DB_NAME } = process.env
+const { DB_HOST, DB_USER, DB_PASS, DB_NAME } = process.env;
 
-export default async function(options: Record<any, unknown> = {}): Promise<ClientBase> {
-  if (g.pg_client != null) return g.pg_client
+export default async function connect(
+  options: Record<string, unknown> = {}
+): Promise<ClientBase> {
+  if (g.pg_client != null) return g.pg_client;
 
   const client = new Client({
     user: DB_USER,
     host: DB_HOST,
     password: DB_PASS,
     database: DB_NAME,
-    ...options
-  })
+    ssl: {
+      rejectUnauthorized: false,
+    },
+    ...options,
+  });
 
-  g.pg_client = client
+  g.pg_client = client;
 
-  await client.connect()
+  await client.connect();
 
-  return client
+  return client;
 }
-

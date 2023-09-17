@@ -23,7 +23,6 @@ import {
 import { generate_id } from "./subject";
 import { bad_request, forbidden, ok } from "./response";
 import { nanoid } from "nanoid";
-import { writeFileSync } from "fs";
 
 export type EndpointExtra = {
   method: string;
@@ -100,34 +99,61 @@ function http_post(endpoint: Endpoint): Endpoint {
   };
 }
 
+function hashStringTo8Digit(input: string) {
+  let hash = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    hash += input.toLowerCase().charCodeAt(i);
+    hash += hash << 10;
+    hash ^= hash >> 6;
+  }
+
+  hash += hash << 3;
+  hash ^= hash >> 11;
+  hash += hash << 15;
+
+  // Ensure the result lies in the range [0, 89999999].
+  hash = Math.abs(hash % 90000000);
+
+  // Adjust to ensure it's an 8-digit number without leading zeros: [10000000, 99999999].
+  return hash + 10000000;
+}
+
 const endpoints: EndpointCarrier = {
   identify: http_post(async (req, res, { client }) => {
-    const { subject_id } = req.body;
+    // Due to time constraints, the subject Id is actually an email.
+    // TODO: Refactor this to use an email variable
+    const { subject_id: email } = req.body;
 
-    if (subject_id == null)
-      return bad_request(res, "missing-field", "Missing subject ID.");
+    if (
+      email === null ||
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)
+    )
+      return bad_request(res, "missing-field", "Incorrect email format.");
+
+    // convert email to numbers
+    const subject_id = hashStringTo8Digit(email).toString();
 
     const result = await get_subject_by_subject_id(client, subject_id);
+    let secret = nanoid();
 
-    if (result.rows.length === 0)
-      return bad_request(
-        res,
-        "subject-not-found",
-        "Subject with that ID does not exist."
-      );
+    if (result.rows.length === 0) {
+      await add_subject(client, subject_id, email, secret);
+    }
 
     const subject = result.rows[0];
 
-    if (!subject.identified) {
+    if (!subject?.identified) {
       await set_identified(client, subject_id);
       req.log.info(`subject ${subject_id} identified`);
     } else {
       req.log.info(`subject ${subject_id} identified again`);
+      secret = subject.secret;
     }
 
     res.json({
       data: {
-        auth_token: subject.secret,
+        auth_token: secret,
       },
     });
   }),
@@ -309,7 +335,8 @@ const endpoints: EndpointCarrier = {
         return forbidden(res);
     }
 
-    await add_usage(client, subject_id, usage);
+    if (Object.keys(usage).length !== 0)
+      await add_usage(client, subject_id, usage);
 
     res.json({});
   }),
