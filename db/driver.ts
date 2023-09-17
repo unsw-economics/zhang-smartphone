@@ -56,7 +56,7 @@ function set_subject_field<T = string>(
   );
 }
 
-function check_subject_fields<T>(
+function check_subject_fields<T extends Record<string, string>>(
   client: ClientBase,
   subject_id: string,
   fields: string[]
