@@ -19,6 +19,7 @@ import {
   get_all_study_dates,
   get_all_usage,
   get_usage_summary,
+  get_subject_by_email,
 } from "../db/driver";
 import { generate_id } from "./subject";
 import { bad_request, forbidden, ok } from "./response";
@@ -134,14 +135,22 @@ const endpoints: EndpointCarrier = {
     // convert email to numbers
     const subject_id = hashStringTo8Digit(email).toString();
 
-    const result = await get_subject_by_subject_id(client, subject_id);
+    let result = await get_subject_by_subject_id(client, subject_id);
     let secret = nanoid();
 
     if (result.rows.length === 0) {
-      await add_subject(client, subject_id, email, secret);
+      try {
+        await add_subject(client, subject_id, email, secret);
+      } catch (err) {
+        result = await get_subject_by_email(client, email);
+      }
     }
 
     const subject = result.rows[0];
+
+    if (!subject) {
+      return bad_request(res, "database-error", "Subject not found.");
+    }
 
     if (!subject?.identified) {
       await set_identified(client, subject_id);
@@ -154,6 +163,7 @@ const endpoints: EndpointCarrier = {
     res.json({
       data: {
         auth_token: secret,
+        subject_id,
       },
     });
   }),

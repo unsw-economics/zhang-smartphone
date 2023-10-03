@@ -34,6 +34,12 @@ export function get_subject_by_subject_id(
   ]);
 }
 
+export function get_subject_by_email(client: ClientBase, email: string) {
+  return client.query("SELECT * FROM subjects WHERE LOWER(email) = LOWER($1)", [
+    email,
+  ]);
+}
+
 export function get_subjects(client: ClientBase, group?: string) {
   if (group) {
     return client.query("select * from subjects_view where study_group = $1", [
