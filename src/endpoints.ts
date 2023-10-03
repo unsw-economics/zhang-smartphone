@@ -132,6 +132,16 @@ const endpoints: EndpointCarrier = {
     )
       return bad_request(res, "missing-field", "Incorrect email format.");
 
+    const existingSubject = await get_subject_by_email(client, email);
+    if (existingSubject.rows.length > 0) {
+      return res.json({
+        data: {
+          auth_token: existingSubject.rows[0].secret,
+          subject_id: existingSubject.rows[0].subject_id,
+        },
+      });
+    }
+
     // convert email to numbers
     let subject_id = hashStringTo8Digit(email).toString();
 
