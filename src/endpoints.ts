@@ -133,7 +133,7 @@ const endpoints: EndpointCarrier = {
       return bad_request(res, "missing-field", "Incorrect email format.");
 
     // convert email to numbers
-    const subject_id = hashStringTo8Digit(email).toString();
+    let subject_id = hashStringTo8Digit(email).toString();
 
     let result = await get_subject_by_subject_id(client, subject_id);
     let secret = nanoid();
@@ -143,6 +143,10 @@ const endpoints: EndpointCarrier = {
         await add_subject(client, subject_id, email, secret);
       } catch (err) {
         result = await get_subject_by_email(client, email);
+        if (!result.rows[0]) {
+          return bad_request(res, "database-error", "Subject not found.");
+        }
+        subject_id = result.rows[0].subject_id;
       }
     }
 
