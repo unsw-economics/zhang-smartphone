@@ -151,6 +151,14 @@ const endpoints: EndpointCarrier = {
     if (result.rows.length === 0) {
       try {
         await add_subject(client, subject_id, email, secret);
+        await set_identified(client, subject_id);
+
+        return res.json({
+          data: {
+            auth_token: secret,
+            subject_id,
+          },
+        });
       } catch (err) {
         result = await get_subject_by_email(client, email);
         if (!result.rows[0]) {
